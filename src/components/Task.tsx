@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent, InvalidEvent } from 'react';
+import { useState, useEffect, FormEvent, ChangeEvent, InvalidEvent } from 'react';
 import { PlusCircle, ClipboardText, Trash } from 'phosphor-react';
 import { v4 as uuid } from 'uuid';
 import styles from './Task.module.css';
@@ -13,8 +13,10 @@ export function Task() {
     const [ tasks, setTasks ] = useState<Task[]>([]);
     const [ newTask, setNewTask ] = useState('');
     const [ countChecked, setCountChecked ] = useState(0);
-
-    /* Colocar em um use Effect resolve? countChecked */
+    
+   function counterChecked() {
+        setCountChecked(tasks.filter(item => item.isChecked === true).length);
+   }
 
     function handleCreateList(e: FormEvent) {
         e.preventDefault();
@@ -38,19 +40,20 @@ export function Task() {
     }
 
     function toggleChange(item : string, e : ChangeEvent<HTMLInputElement>) {
-        console.log(e.target.checked);
         tasks.map(task => {
             if (task.id === item) {
                 task.isChecked = e.target.checked;
             }  
         });
+        counterChecked();
     }
 
     function deleteList(taskToDelete : number) {
         const taskWithoutDelete = tasks.filter((task, index) => {
             return index !== taskToDelete;
-        })
+        });
         setTasks(taskWithoutDelete);
+        counterChecked();
     }
 
     const isNewTaskEmpty = newTask.length === 0;
