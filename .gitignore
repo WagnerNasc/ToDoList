@@ -1,3 +1,7 @@
+#components
+*.TaskList
+*.TaskOld
+
 # Logs
 logs
 *.log

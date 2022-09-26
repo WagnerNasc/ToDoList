@@ -1,30 +1,20 @@
 import { useState, FormEvent, ChangeEvent, InvalidEvent } from 'react';
 import { PlusCircle, ClipboardText, Trash } from 'phosphor-react';
-import { v4 as uuid } from 'uuid';
 import styles from './Task.module.css';
 
-interface Task {
-    id: string,
-    name: string,
-    isChecked: boolean
-}
-
 export function Task() {
-    const [ tasks, setTasks ] = useState<Task[]>([]);
+    const [ tasks, setTasks ] = useState<string[]>([]);
     const [ newTask, setNewTask ] = useState('');
-    const [ countChecked, setCountChecked ] = useState(0);
-
-    /* Colocar em um use Effect resolve? countChecked */
+    const [ taskCount, setTaskCount ] = useState(0);
+    const [ isChecked, setIsChecked ] = useState(false);
+    const [ countChecked, setCountCheck ] = useState(0);
 
     function handleCreateList(e: FormEvent) {
         e.preventDefault();
 
-        setTasks([...tasks, {   
-                                id: uuid(),
-                                name: newTask,
-                                isChecked: false
-                            }
-        ]);
+        setTasks([...tasks, newTask]);
+        setTaskCount(taskCount + 1);
+
         setNewTask('');
     }
 
@@ -37,19 +27,25 @@ export function Task() {
         e.target.setCustomValidity('A tarefa não pode estar vazia!');
     }
 
-    function toggleChange(item : string, e : ChangeEvent<HTMLInputElement>) {
-        console.log(e.target.checked);
-        tasks.map(task => {
-            if (task.id === item) {
-                task.isChecked = e.target.checked;
-            }  
-        });
+    function toggleChange(index : number, e : ChangeEvent<HTMLInputElement>) {
+        console.log(index);
+        setIsChecked(e.target.checked);
+        if (e.target.checked === true)
+            setCountCheck(countChecked + 1);
+        else {
+            setCountCheck(countChecked - 1); /* Ver uma forma de subtrair quando deletar o index */
+        }
     }
 
     function deleteList(taskToDelete : number) {
         const taskWithoutDelete = tasks.filter((task, index) => {
             return index !== taskToDelete;
         })
+
+        if (taskCount >= 1) {
+            setTaskCount(taskCount - 1);
+        }
+
         setTasks(taskWithoutDelete);
     }
 
@@ -60,7 +56,7 @@ export function Task() {
             <form onSubmit={handleCreateList} className={styles.listForm}>
                 <input className={styles.inputList}
                         name="task"
-                        value={newTask}
+                        value= {newTask}
                         placeholder= "Adicione uma nova tarefa"
                         onChange= {handleNewTaskChange}
                         onInvalid= {handleNewCommentInvalid}
@@ -77,20 +73,20 @@ export function Task() {
                 <header className={styles.taskHeader}>
                     <div className={styles.taskCount}>
                         <strong>Tarefas criadas</strong>
-                            <span>{tasks.length}</span>
+                            <span>{taskCount}</span>
                     </div>
                     <div className={styles.taskCompleted}>
                         <strong>Concluídas</strong>
-                        {tasks.length === 0 ? 
+                        {taskCount === 0 ? 
                         (
                             <span>0</span>
                         ) :
                         (
-                            <span>{countChecked} de {tasks.length}</span>
+                            <span>{countChecked} de {taskCount}</span>
                         )}
                     </div>
                 </header>
-                {tasks.length === 0 ?
+                {taskCount === 0 ?
                     (
                         <div className={styles.taskBoxNull}>
                             <ClipboardText size={70} />
@@ -106,8 +102,8 @@ export function Task() {
                                     <div className={styles.taskContent}>
                                         <div className={styles.taskCheck}>
                                             <label>
-                                                <input type="checkbox" key={index} onChange={(e) => toggleChange(item.id, e)}/>
-                                                <p>{item.name}</p>
+                                                <input type="checkbox" onChange={(e) => toggleChange(index, e)} />
+                                                <p>{item}</p>
                                                 <span className={styles.check}></span>
 
                                             </label>
